@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using order_routing.Server.Data;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,13 +9,23 @@ var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+
 builder.Services.AddDbContext<OrderDbContext>(opt => opt.UseNpgsql(connString));
 //builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddDataProtection().PersistKeysToDbContext<OrderDbContext>();
 
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
+
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseDefaultFiles();
 app.MapStaticAssets();

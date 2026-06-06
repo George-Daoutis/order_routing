@@ -6,7 +6,7 @@ namespace order_routing.Server.Data
 {
     public class OrderDbContext: DbContext, IDataProtectionKeyContext
     {
-        public OrderDbContext(DbContextOptions options) : base(options)
+        public OrderDbContext(DbContextOptions<OrderDbContext> options) : base(options)
         {
             
         }
