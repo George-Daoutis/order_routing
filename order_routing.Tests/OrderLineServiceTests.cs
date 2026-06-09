@@ -33,21 +33,55 @@ namespace order_routing.Tests
             await dbContext.Stores.AddAsync(existingStore);
             await dbContext.SaveChangesAsync();
 
-            var product = new ProductGetDTO { Description = "item 1", ProductCode = "12345" };
-            var store = new StoreGetDTO { Id = 1, Address = "address 1", StoreDescription = "store in adres 1", PhoneNumber = "1234567678" };
+            var orderlineCreate = new OrderLineCreateDTO { ProductId = 1, StoreId = 1, Amount = 10 };
 
-            var result = await service.NewOrder(product, store, 10);
+            var result = await service.NewOrder(orderlineCreate);
 
             Assert.NotNull(result);
             Assert.Equal(10, result.Amount);
-            Assert.Equal(existingProduct.Id, result.ProductId);
-            Assert.Equal(existingStore.Id, result.StoreId);
+            Assert.Equal(1, result.ProductId);
+            Assert.Equal(1, result.StoreId);
             Assert.Equal(OrderLineStatus.Requested, result.OrderLineStatus);
 
-            var orderline = await dbContext.OrderLines.FirstOrDefaultAsync(p => p.ProductId == existingProduct.Id);
+            var orderline = await dbContext.OrderLines.FirstOrDefaultAsync(p => p.ProductId == 1);
             Assert.NotNull(orderline);
             Assert.Equal(10, orderline.Amount);
             Assert.Equal(OrderLineStatus.Requested, orderline.OrderLineStatus);
+        }
+
+        [Fact]
+        public async Task AddOrderFulfillment_WhenTotalQuantityMeetsAmount_ShouldSetStatusToCompleted()
+        {
+            var dbContext = GetInMemoryDbContext();
+
+            var logger = NullLogger<OrderLineService>.Instance;
+
+            var service = new OrderLineService(dbContext, logger);
+
+            var existingOrder = new OrderLine
+            {
+                Id = 1,
+                Amount = 10,
+                OrderLineStatus = OrderLineStatus.Requested
+            };
+            await dbContext.OrderLines.AddAsync(existingOrder);
+            await dbContext.SaveChangesAsync();
+
+            var fulfillmentDto = new OrderlineFulfillmentCreateDTO
+            {
+                OrderLineId = 1,
+                StoreId = 5,
+                Quantity = 10
+            };
+
+            var result = await service.AddOrderFulfillment(fulfillmentDto);
+
+            Assert.NotNull(result);
+            Assert.Equal(OrderLineStatus.Completed, result.OrderLineStatus);
+
+            var fulfillmentInDb = await dbContext.OrderLineFullfillments.FirstOrDefaultAsync(f => f.OrderLineId == 1);
+            Assert.NotNull(fulfillmentInDb);
+            Assert.Equal(10, fulfillmentInDb.Quantity);
         }
     }
 }

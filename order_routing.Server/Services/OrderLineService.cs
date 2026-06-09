@@ -7,8 +7,10 @@ namespace order_routing.Server.Services
 {
     public interface IOrderLineService
     {
-        public Task<OrderLine> NewOrder(ProductGetDTO productDTO, StoreGetDTO storeDTO, decimal amount);
-        public Task<OrderLine> OrderLineStatusChange(int orderId, OrderLineStatus lineStatus);
+        public Task<OrderLineGetDTO> NewOrder(OrderLineCreateDTO orderlineCreateDTO);
+        public Task<List<OrderLineGetDTO>> GetAllOrderLines();
+        public Task<OrderLineGetDTO> OrderLineStatusChange(int orderId, OrderLineStatus lineStatus);
+        public Task<OrderLineGetDTO> AddOrderFulfillment(OrderlineFulfillmentCreateDTO fulfillmentDTO);
     }
     public class OrderLineService : IOrderLineService
     {
@@ -21,15 +23,15 @@ namespace order_routing.Server.Services
             _logger = logger;
         }
 
-        public async Task<OrderLine> NewOrder(ProductGetDTO productDTO, StoreGetDTO storeDTO, decimal amount)
+        public async Task<OrderLineGetDTO> NewOrder(OrderLineCreateDTO orderlineCreateDTO)
         {
             try
             {
                 var product = await _dbContext.Products
-                    .FirstOrDefaultAsync(p => p.ProductCode == productDTO.ProductCode);
+                    .FirstOrDefaultAsync(p => p.Id == orderlineCreateDTO.ProductId);
 
                 var store = await _dbContext.Stores
-                    .FirstOrDefaultAsync(s => s.Id == storeDTO.Id);
+                    .FirstOrDefaultAsync(s => s.Id == orderlineCreateDTO.StoreId);
 
                 if (product != null && store != null)
                 {
@@ -37,16 +39,32 @@ namespace order_routing.Server.Services
                     {
                         ProductId = product.Id,
                         StoreId = store.Id,
-                        Amount = amount,
+                        Amount = orderlineCreateDTO.Amount,
                         OrderLineStatus = OrderLineStatus.Requested
                     };
                     await _dbContext.OrderLines.AddAsync(orderLine);
                     await _dbContext.SaveChangesAsync();
-                    return orderLine;
+                    return new OrderLineGetDTO
+                    {
+                        Id = orderLine.Id,
+                        CreationDate = orderLine.CreationDate,
+                        StoreId = orderLine.StoreId,
+                        ProductId = orderLine.ProductId,
+                        Amount = orderLine.Amount,
+                        OrderLineFulfillment = orderLine.OrderLineFulfillment.Select(f => new OrderlineFulfillmentGetDTO
+                        {
+                            Id = f.Id,
+                            StoreId = f.StoreId,
+                            Quantity = f.Quantity,
+                            CreationDate = f.CreationDate,
+                            OrderLineId = f.OrderLineId
+                        }).ToList(),
+                        OrderLineStatus = orderLine.OrderLineStatus
+                    };
                 }
                 else
                 {
-                    _logger.LogWarning("Product {product} or Store {store} not found", productDTO.ProductCode, storeDTO.Id);
+                    _logger.LogWarning("Product {product} or Store {store} not found", orderlineCreateDTO.ProductId, orderlineCreateDTO.StoreId);
                     return null!;
                 }
             }
@@ -57,7 +75,46 @@ namespace order_routing.Server.Services
             }
         }
 
-        public async Task<OrderLine> OrderLineStatusChange(int orderId, OrderLineStatus linestatus)
+        public async Task<List<OrderLineGetDTO>> GetAllOrderLines()
+        {
+            try
+            {
+                var orders = await _dbContext.OrderLines
+                .Select(o => new OrderLineGetDTO
+                { Id = o.Id,
+                    Amount = o.Amount,
+                    CreationDate = o.CreationDate,
+                    OrderLineStatus = o.OrderLineStatus,
+                    ProductId = o.ProductId,
+                    StoreId = o.StoreId,
+                    OrderLineFulfillment = o.OrderLineFulfillment.Select(f => new OrderlineFulfillmentGetDTO
+                    {
+                        Id = f.Id,
+                        StoreId = f.StoreId,
+                        Quantity = f.Quantity,
+                        CreationDate = f.CreationDate,
+                        OrderLineId = f.OrderLineId
+                    }).ToList()
+                }).ToListAsync();
+
+                if (orders.Count > 0)
+                {
+                    return orders;
+                }
+                else
+                {
+                    _logger.LogWarning("Orders not found.");
+                    return [];
+                }
+            }
+            catch (Exception err)
+            {
+                _logger.LogError("{err}", err);
+                throw;
+            }
+        }
+
+        public async Task<OrderLineGetDTO> OrderLineStatusChange(int orderId, OrderLineStatus linestatus)
         {
             try
             {
@@ -68,7 +125,23 @@ namespace order_routing.Server.Services
                 {
                     order.OrderLineStatus = linestatus;
                     await _dbContext.SaveChangesAsync();
-                    return order;
+                    return new OrderLineGetDTO
+                    {
+                        Id = order.Id,
+                        CreationDate = order.CreationDate,
+                        StoreId = order.StoreId,
+                        ProductId = order.ProductId,
+                        Amount = order.Amount,
+                        OrderLineFulfillment = order.OrderLineFulfillment.Select(f => new OrderlineFulfillmentGetDTO
+                        {
+                            Id = f.Id,
+                            StoreId = f.StoreId,
+                            Quantity = f.Quantity,
+                            CreationDate = f.CreationDate,
+                            OrderLineId = f.OrderLineId
+                        }).ToList(),
+                        OrderLineStatus = order.OrderLineStatus
+                    };
                 }
                 else
                 {
@@ -83,7 +156,7 @@ namespace order_routing.Server.Services
             }
         }
 
-        public async Task<OrderLine> AddOrderFulfillment(OrderlineFulfillmentCreateDTO fulfillmentDTO)
+        public async Task<OrderLineGetDTO> AddOrderFulfillment(OrderlineFulfillmentCreateDTO fulfillmentDTO)
         {
             try
             {
@@ -111,7 +184,23 @@ namespace order_routing.Server.Services
 
                     await _dbContext.OrderLineFullfillments.AddAsync(orderFulfillement);
                     await _dbContext.SaveChangesAsync();
-                    return order;
+                    return new OrderLineGetDTO
+                    {
+                        Id = order.Id,
+                        CreationDate = order.CreationDate,
+                        StoreId = order.StoreId,
+                        ProductId = order.ProductId,
+                        Amount = order.Amount,
+                        OrderLineFulfillment = order.OrderLineFulfillment.Select(f => new OrderlineFulfillmentGetDTO
+                        {
+                            Id = f.Id,
+                            StoreId = f.StoreId,
+                            Quantity = f.Quantity,
+                            CreationDate = f.CreationDate,
+                            OrderLineId = f.OrderLineId
+                        }).ToList(),
+                        OrderLineStatus = order.OrderLineStatus
+                    };
                 }
 
                 else

@@ -1,6 +1,19 @@
-@order_routing.Server_HostAddress = http://localhost:5233
+@order_routing.Server_HostAddress = https://localhost:7173
 
 GET {{order_routing.Server_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+POST {{order_routing.Server_HostAddress}}/api/orderline
+Content-Type: application/json
+
+{
+  //OrderLineCreateDTO
+}
+
+###
+
+GET {{order_routing.Server_HostAddress}}/api/orderline
 
 ###

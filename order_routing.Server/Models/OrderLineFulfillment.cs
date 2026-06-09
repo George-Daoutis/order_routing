@@ -17,4 +17,14 @@
         public int StoreId { get; set; }
         public decimal Quantity { get; set; }
     }
+
+    public class OrderlineFulfillmentGetDTO
+    {
+        public int Id { get; set; }
+        public DateOnly CreationDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+        public int OrderLineId { get; set; }
+        public int StoreId { get; set; }
+        public decimal Quantity { get; set; }
+
+    }
 }

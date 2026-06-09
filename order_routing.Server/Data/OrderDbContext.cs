@@ -14,6 +14,19 @@ namespace order_routing.Server.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Product>().HasData(
+                new Product { Id = 1, Description = "Item 1", ProductCode = "ITEM001" },
+                new Product { Id = 2, Description = "Item 2", ProductCode = "ITEM002" },
+                new Product { Id = 3, Description = "Item 3", ProductCode = "ITEM003" }
+                );
+
+            modelBuilder.Entity<Store>().HasData(
+                new Store { Id = 1, Address = "Address 1", StoreDescription = "Store 1", PhoneNumber = "2101234567"},
+                new Store { Id = 2, Address = "Address 2", StoreDescription = "Store 2", PhoneNumber = "2104501929" },
+                new Store { Id = 3, Address = "Address 3", StoreDescription = "Store 3", PhoneNumber = "2106316478" }
+                );
+
+
             modelBuilder.Entity<OrderLine>()
                 .HasOne(s => s.Store)
                 .WithMany(o => o.OrderLines)
