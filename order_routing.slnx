@@ -4,4 +4,5 @@
     <Deploy />
   </Project>
   <Project Path="order_routing.Server/order_routing.Server.csproj" />
+  <Project Path="order_routing.Tests/order_routing.Tests.csproj" Id="60b310f2-04f1-483c-975a-46144202ed1f" />
 </Solution>
