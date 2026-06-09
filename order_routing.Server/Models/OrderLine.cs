@@ -3,7 +3,7 @@
     public class OrderLine
     {
         public int Id { get; set; }
-        public string Description { get; set; } = string.Empty;
+        public DateOnly CreationDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
         public int ProductId { get; set; }
         public Product Product { get; set; } = null!;
         public int StoreId { get; set; }

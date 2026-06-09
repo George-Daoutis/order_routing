@@ -7,4 +7,10 @@
         public string Description { get; set; } = string.Empty;
         public ICollection<OrderLine> OrderLines { get; set; } = new List<OrderLine>();
     }
+
+    public class ProductGetDTO
+    {
+        public string ProductCode { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
 }

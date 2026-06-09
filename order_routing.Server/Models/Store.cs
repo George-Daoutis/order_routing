@@ -10,4 +10,19 @@
         public ICollection<OrderLineFulfillment> OrderLineFulfillments { get; set; } = new List<OrderLineFulfillment>();
 
     }
+
+    public class StoreCreateDTO
+    {
+        public string StoreDescription { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+    }
+
+    public class StoreGetDTO
+    {
+        public int Id { get; set; }
+        public string StoreDescription { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+    }
 }
