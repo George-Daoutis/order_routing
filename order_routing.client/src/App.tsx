@@ -1,58 +1,34 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 
-interface Forecast {
-    date: string;
-    temperatureC: number;
-    temperatureF: number;
-    summary: string;
-}
-
 function App() {
-    const [forecasts, setForecasts] = useState<Forecast[]>();
 
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
-
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
 
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
-    );
+        <div className="flex flex-col h-screen overflow-hidden bg-slate-900 text-white">
 
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
-        }
-    }
+            <header className="h-[15vh] w-full bg-slate-800 border-b border-slate-700 flex items-center px-6 shrink-0">
+                <h1 className="text-xl font-bold tracking-wide">Application Header (15%)</h1>
+            </header>
+
+            <main className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 1</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 2</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 3</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 4</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 5</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 6</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 7</div>
+                <div className="p-4 bg-slate-800/50 rounded border border-slate-700">Line Item 8</div>
+            </main>
+
+            <footer className="h-[10vh] w-full bg-slate-950 border-t border-slate-800 flex items-center px-6 shrink-0">
+                <p className="text-sm text-slate-400">Application Footer (10%)</p>
+            </footer>
+
+        </div>
+
+    );
 }
 
 export default App;
