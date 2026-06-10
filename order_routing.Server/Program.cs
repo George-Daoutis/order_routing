@@ -24,6 +24,17 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration);
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("VitePolicy", policy =>
+    {
+        policy.WithOrigins("https://localhost:7173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
@@ -39,6 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("VitePolicy");
 app.UseAuthorization();
 
 app.MapControllers();
