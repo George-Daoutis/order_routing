@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import './App.css';
+import { OrderLine } from './OrderLine.tsx'
 
 function App() {
-
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-slate-900 text-white">
@@ -13,13 +13,8 @@ function App() {
             </header>
 
             <main className="flex-1 overflow-y-auto p-3 space-y-3">
-                <div className="p-8 bg-slate-800/50 rounded border border-slate-700">
-                    <div>
-
-                    </div>
-                    Line Item 1
-                </div>
-                <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 2</div>
+                <OrderLine />
+                <OrderLine />
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 3</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 4</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 5</div>

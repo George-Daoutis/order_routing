@@ -35,5 +35,16 @@ namespace order_routing.Server.Controllers
             }
             else return BadRequest();
         }
+
+        [HttpPost("orderff")]
+        public async Task<ActionResult<OrderLineGetDTO>> CreateOrderFulfillment([FromBody] OrderlineFulfillmentCreateDTO fulfillmentDTO)
+        {
+            var response = await _orderLineService.AddOrderFulfillment(fulfillmentDTO);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            else return BadRequest();
+        }
     }
 }
