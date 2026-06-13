@@ -1,0 +1,45 @@
+services:
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: order_routing_db
+    environment:
+      POSTGRES_USER: order_routing_admin
+      POSTGRES_PASSWORD: 'secure_password_dev123!'
+      POSTGRES_DB: order_routing_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  backend_api:
+    image: order-routing-backend
+    build:
+      context: ./order_routing.Server
+      dockerfile: Dockerfile
+    container_name: order_routing_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres_db;Database=order_routing_dev;Username=order_routing_admin;Password='secure_password_dev123!';
+    depends_on:
+      - postgres_db
+    restart: always
+
+  frontend_ui:
+    image: order-routing-frontend
+    build:
+      context: ./order_routing.client
+      dockerfile: Dockerfile
+    container_name: order_routing_ui
+    ports:
+      - "80:80"
+      #- "443:443"
+    #volumes:  #for ssl later
+      #- /etc/ssl/certs/company_cert.crt:/etc/nginx/ssl/company_cert.crt:ro
+      #- /etc/ssl/certs/company_key.key:/etc/nginx/ssl/company_key.key:ro 
+    depends_on:
+      - backend_api
+    restart: always
+
+volumes:
+  postgres_data:

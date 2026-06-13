@@ -24,11 +24,13 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration);
 });
 
+//keeping cors for local development
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VitePolicy", policy =>
     {
-        policy.WithOrigins("https://localhost:7173")
+        policy.WithOrigins("https://localhost:58369")
+        //.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -56,5 +58,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 app.Run();

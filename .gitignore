@@ -361,5 +361,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/order_routing.client/_later_nginx.conf
-/order_routing.client/_later_nginx.conf
+/order_routing.client/_ltrng.conf

@@ -17,26 +17,33 @@ const certificateName = "order_routing.client";
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
-if (!fs.existsSync(baseFolder)) {
-    fs.mkdirSync(baseFolder, { recursive: true });
-}
+const isDocker = fs.existsSync('/.dockerenv') || env.IS_DOCKER === 'true';
 
-if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-    if (0 !== child_process.spawnSync('dotnet', [
-        'dev-certs',
-        'https',
-        '--export-path',
-        certFilePath,
-        '--format',
-        'Pem',
-        '--no-password',
-    ], { stdio: 'inherit', }).status) {
-        throw new Error("Could not create certificate.");
+if (!isDocker) {
+    if (!fs.existsSync(baseFolder)) {
+        fs.mkdirSync(baseFolder, { recursive: true });
+    }
+
+    if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
+        try {
+            if (0 !== child_process.spawnSync('dotnet', [
+                'dev-certs',
+                'https',
+                '--export-path',
+                certFilePath,
+                '--format',
+                'Pem',
+                '--no-password',
+            ], { stdio: 'inherit', }).status) {
+                throw new Error("Could not create certificate.");
+            }
+        } catch (e) {
+            console.warn("Warning: Could not create local development certificates via dotnet CLI: {e}.", e);
+        }
     }
 }
 
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7173';
+const hasCerts = fs.existsSync(keyFilePath) && fs.existsSync(certFilePath);
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -48,15 +55,18 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
-                target,
-                secure: false
+            '/api': {
+                target: 'https://localhost:7173',
+                secure: false,
+                changeOrigin: true
             }
         },
         port: parseInt(env.DEV_SERVER_PORT || '58369'),
-        https: {
-            key: fs.readFileSync(keyFilePath),
-            cert: fs.readFileSync(certFilePath),
-        }
+        ...(hasCerts && {
+            https: {
+                key: fs.readFileSync(keyFilePath),
+                cert: fs.readFileSync(certFilePath),
+            }
+        })
     }
 })
