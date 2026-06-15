@@ -17,6 +17,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<OrderDbContext>(opt => opt.UseNpgsql(connString));
 builder.Services.AddScoped<IOrderLineService, OrderLineService>();
+builder.Services.AddScoped<IProductService, ProductsService>();
 builder.Services.AddDataProtection().PersistKeysToDbContext<OrderDbContext>();
 
 builder.Host.UseSerilog((context, configuration) =>

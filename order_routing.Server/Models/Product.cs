@@ -10,6 +10,7 @@
 
     public class ProductGetDTO
     {
+        public int Id { get; set; }
         public string ProductCode { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
     }

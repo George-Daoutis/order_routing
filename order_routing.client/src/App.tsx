@@ -1,11 +1,31 @@
-//import { useEffect, useState } from 'react';
-//import { useQuery } from '@tanstack/react-query';
+import { useMemo, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import './App.css';
 import { OrderLine } from './OrderLine.tsx'
 
+interface ProductLookup {
+    id: number;
+    productCode: string;
+    description: string;
+}
+
+
 function App() {
 
+    const fetchProducts = async () => {
+        const response = await fetch('/api/orderline/getproducts', {
+            method: "GET",
+            credentials: "include"
+        });
+        if (!response.ok) throw new Error("Network Error");
+        return response.json();
+    }
 
+    const { data: products = [] } = useQuery<ProductLookup[]>({ queryKey: ['products'], queryFn: fetchProducts })
+
+    const productLookup = useMemo(() => {
+        return new Map<number, ProductLookup>(products.map(p => [p.id, p]));
+    }, [products]);
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-slate-900 text-white">
@@ -15,8 +35,8 @@ function App() {
             </header>
 
             <main className="flex-1 overflow-y-auto p-3 space-y-3">
-                <OrderLine />
-                <OrderLine />
+                <OrderLine products = {productLookup} />
+                <OrderLine products = {productLookup} />
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 3</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 4</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 5</div>

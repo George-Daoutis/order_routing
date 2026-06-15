@@ -9,9 +9,11 @@ namespace order_routing.Server.Controllers
     public class OrderLineController: ControllerBase
     {
         private readonly IOrderLineService _orderLineService;
-        public OrderLineController(IOrderLineService orderLineService)
+        private readonly IProductService _productService;
+        public OrderLineController(IOrderLineService orderLineService, IProductService productService)
         {
             _orderLineService = orderLineService;
+            _productService = productService;
         }
 
         [HttpPost]
@@ -29,6 +31,17 @@ namespace order_routing.Server.Controllers
         public async Task<ActionResult<OrderLineGetDTO>> GetAllOrderLines()
         {
             var response = await _orderLineService.GetAllOrderLines();
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            else return BadRequest();
+        }
+
+        [HttpGet("getproducts")]
+        public async Task<ActionResult<OrderLineGetDTO>> GetAllProducts()
+        {
+            var response = await _productService.GetAllProducts();
             if (response != null)
             {
                 return Ok(response);
