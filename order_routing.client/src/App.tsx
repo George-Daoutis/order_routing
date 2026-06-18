@@ -9,23 +9,72 @@ interface ProductLookup {
     description: string;
 }
 
+interface StoreLookup {
+    id: number;
+    storeDescription: string;
+    address: string;
+    phoneNumber: string;
+}
+
+interface Order {
+    id: number;
+}
+
 
 function App() {
+    const { data: currentStore = [] } = useQuery<StoreLookup>({
+        queryKey: ['currentStore'], queryFn: async () => {
+            const response = await fetch('/api/store/current', {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!response.ok) throw new Error("Network Error");
+            return response.json();
+        }
+    })
 
-    const fetchProducts = async () => {
-        const response = await fetch('/api/orderline/getproducts', {
-            method: "GET",
-            credentials: "include"
-        });
-        if (!response.ok) throw new Error("Network Error");
-        return response.json();
-    }
+    const { data: products = [] } = useQuery<ProductLookup[]>({
+        queryKey: ['products'], queryFn: async () => {
+            const response = await fetch('/api/orderline/getproducts', {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!response.ok) throw new Error("Network Error");
+            return response.json();
+        }
+    })
 
-    const { data: products = [] } = useQuery<ProductLookup[]>({ queryKey: ['products'], queryFn: fetchProducts })
+    const { data: stores = [] } = useQuery<StoreLookup[]>({
+        queryKey: ['stores'], queryFn: async () => {
+            const response = await fetch('/api/store', {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!response.ok) throw new Error("Network Error");
+            return response.json();
+        }
+    })
+
+    const { data: orders } = useQuery({
+        queryKey: ["orders"],
+        queryFn: async () => {
+            const response = await fetch('/api/orderline', {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!response.ok) throw new Error("Network Error");
+            return response.json();
+        }
+    })
 
     const productLookup = useMemo(() => {
         return new Map<number, ProductLookup>(products.map(p => [p.id, p]));
     }, [products]);
+
+    const storesLookup = useMemo(() => {
+        return new Map<number, StoreLookup>(stores.map(s => [s.id, s]));
+    }, [stores]);
+    
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-slate-900 text-white">
@@ -35,8 +84,9 @@ function App() {
             </header>
 
             <main className="flex-1 overflow-y-auto p-3 space-y-3">
-                <OrderLine products = {productLookup} />
-                <OrderLine products = {productLookup} />
+                {orders?.map((order: Order) => (
+                    <OrderLine key={order.id} products={productLookup} stores={stores} currentStore={currentStore} order={order} />
+                ))}
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 3</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 4</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 5</div>

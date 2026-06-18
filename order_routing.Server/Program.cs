@@ -9,7 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -18,6 +22,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<OrderDbContext>(opt => opt.UseNpgsql(connString));
 builder.Services.AddScoped<IOrderLineService, OrderLineService>();
 builder.Services.AddScoped<IProductService, ProductsService>();
+builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddDataProtection().PersistKeysToDbContext<OrderDbContext>();
 
 builder.Host.UseSerilog((context, configuration) =>

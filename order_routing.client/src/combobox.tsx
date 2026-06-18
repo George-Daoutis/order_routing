@@ -11,7 +11,7 @@ interface ComboBoxProps {
     products: Map<number, ProductLookup>;
 }
 
-export function ComboBox( productsLookup : ComboBoxProps) {
+export function ComboBox({ productsLookup, value }) {
     const [selectedItem, setSelectedItem] = useState<ProductLookup | null>(null);
     const [query, setQuery] = useState<string>('');
 
@@ -28,7 +28,7 @@ export function ComboBox( productsLookup : ComboBoxProps) {
             });
 
     return (
-        <Combobox value={selectedItem} onChange={setSelectedItem} onClose={() => setQuery('')}>
+        <Combobox value={selectedItem} onChange={setSelectedItem} onClose={() => setQuery('')} disabled={value}>
             <div className="relative">
                 <ComboboxInput
                     aria-label="Assignee"
@@ -36,6 +36,7 @@ export function ComboBox( productsLookup : ComboBoxProps) {
                     displayValue={(product: ProductLookup | null) => product?.description ?? ''}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
                     placeholder="Επιλέξτε προϊόν..."
+                    value={value? value: "" }
                 />
 
                 <ComboboxOptions

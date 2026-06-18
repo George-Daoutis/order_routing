@@ -39,7 +39,7 @@ namespace order_routing.Server.Controllers
         }
 
         [HttpGet("getproducts")]
-        public async Task<ActionResult<OrderLineGetDTO>> GetAllProducts()
+        public async Task<ActionResult<List<OrderLineGetDTO>>> GetAllProducts()
         {
             var response = await _productService.GetAllProducts();
             if (response != null)

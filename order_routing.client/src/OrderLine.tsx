@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ComboBox } from './combobox.tsx';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export enum ShippingMethod {
     Standard = "Standard Delivery",
@@ -12,32 +12,34 @@ export enum ShippingMethod {
 interface FulfillmentItem {
     id: number;
     storeName: string;
+    quantity: number;
     shippingMethod: ShippingMethod;
     isStepOneConfirmed: boolean;
     isStepTwoConfirmed: boolean;
 }
+interface StoreLookup {
+    id: number;
+    storeDescription: string;
+    address: string;
+    phoneNumber: string;
+}
 
+interface ProductLookup {
+    id: number;
+    productCode: string;
+    description: string;
+}
 
 const mockFulfillmentData: FulfillmentItem[] = [
-    { id: 1, storeName: "Κατάστημα Αθήνας", shippingMethod: ShippingMethod.Standard, isStepOneConfirmed: false, isStepTwoConfirmed: false },
+    //{ id: 1, storeName: "Κατάστημα Αθήνας", shippingMethod: ShippingMethod.Standard, isStepOneConfirmed: false, isStepTwoConfirmed: false },
     //{ id: 2, storeName: "Κατάστημα Θεσσαλονίκης", shippingMethod: ShippingMethod.Express, isStepOneConfirmed: true, isStepTwoConfirmed: false },
     //{ id: 3, storeName: "Κατάστημα Πάτρας", shippingMethod: ShippingMethod.StorePickup, isStepOneConfirmed: false, isStepTwoConfirmed: false },
 ];
-export function OrderLine({ products }) {
-    const { data } = useQuery({
-        queryKey: ["orders"],
-        queryFn: async () => {
-            const response = await fetch('/api/orderline', {
-                method: "GET",
-                credentials: "include"
-            });
-            if (!response.ok) throw new Error("Network Error");
-            return response.json();
-        }
-    })
-
-
-    const [items, setItems] = useState<FulfillmentItem[]>(mockFulfillmentData);
+export function OrderLine({ products, stores, currentStore, order }) {
+    console.log(order);
+    const [items, setItems] = useState<FulfillmentItem[]>([]);
+    const [orderItem, setOrderItem] = useState<ProductLookup>();
+    const [isConfirmed, setIsConfirmed] = useState<boolean>(false);
 
     const handleQuantityChange = (id: number, value: string) => {
         const parsedValue = parseInt(value, 10) || 0;
@@ -52,13 +54,28 @@ export function OrderLine({ products }) {
     };
 
     const handleConfirmStepOne = (id: number) => {
-        console.log(`Confirmed Step 1 for item: ${id}`);
         setItems(prev => prev.map(item => item.id === id ? { ...item, isStepOneConfirmed: true } : item));
     };
 
     const handleConfirmStepTwo = (id: number) => {
-        console.log(`Confirmed Step 2 (Final) for item: ${id}`);
         setItems(prev => prev.map(item => item.id === id ? { ...item, isStepTwoConfirmed: true } : item));
+    };
+
+    useEffect(() => {
+        const orderFill = () => {
+            if (order && orderItem == null) {
+                const prod = products.get(order.productId);
+                setOrderItem(prod);
+                setIsConfirmed(true);
+            }
+        };
+
+        orderFill();
+    });
+
+    const handleAddFulfillment = () => {
+        const newFulfillment: FulfillmentItem = { id: currentStore.id, storeName: currentStore.storeDescription, quantity: 0, shippingMethod: ShippingMethod.Standard, isStepOneConfirmed: false, isStepTwoConfirmed: false };
+        setItems((prevItems) => [...prevItems, newFulfillment]);
     };
 
         return (
@@ -67,14 +84,15 @@ export function OrderLine({ products }) {
                 {/* Περιγραφή & ID */}
                 <div className="flex flex-col space-y-1 pt-2">
                     <span className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Περιγραφή</span>
-                    <ComboBox products={products} />
-                    <span className="text-[14px] text-slate-400">#412351</span>
+                    <ComboBox productsLookup={products} value={orderItem?.description} />
+                    <span className="text-[14px] text-slate-400">{orderItem?.productCode}</span>
                 </div>
 
                 {/* Ποσότητα Input */}
                 <div className="flex flex-col space-y-1 pt-2 ml-8">
                     <span className="text-xs uppercase tracking-wider text-slate-300 font-semibold text-center">Ποσότητα</span>
                     <input
+                        disabled={isConfirmed }
                         type="number"
                         min="0"
                         onKeyDown={(e) => {
@@ -82,7 +100,8 @@ export function OrderLine({ products }) {
                         }}
                         className="border-b-2 bg-slate-900/60 border-blue-300 w-16 focus:outline-none focus:border-blue-200 font-mono text-sm font-bold text-blue-400 text-center py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="#"
-                    />
+                        defaultValue={order?.amount}
+                        />
                 </div>
 
                 {/* Κατάσταση */}
@@ -112,8 +131,7 @@ export function OrderLine({ products }) {
                                 >
                                     {/* Όνομα Μαγαζιού */}
                                     <div className="flex flex-col w-52 truncate">
-                                        <span className="text-sm font-semibold text-white truncate">{item.storeName}</span>
-                                        <span className="text-[10px] text-slate-400">{item.storeId}</span>
+                                        <span className="text-sm font-semibold text-white truncate">{item?.storeName}</span>
                                     </div>
 
                                     {/* Input Ποσότητας */}
@@ -182,7 +200,7 @@ export function OrderLine({ products }) {
                         </div>
                     </div>
                 </div>
-
+                <button onClick={() => handleAddFulfillment()} disabled={items.some(i => i.id == currentStore.id)} >test</button>
 
 
 
