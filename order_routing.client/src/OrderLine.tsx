@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { ComboBox } from './combobox.tsx';
 import { useState, useEffect } from 'react';
 
@@ -13,7 +12,7 @@ interface FulfillmentItem {
     id: number;
     storeName: string;
     quantity: number;
-    shippingMethod: ShippingMethod;
+    transportMethod: string;
     isStepOneConfirmed: boolean;
     isStepTwoConfirmed: boolean;
 }
@@ -30,11 +29,6 @@ interface ProductLookup {
     description: string;
 }
 
-const mockFulfillmentData: FulfillmentItem[] = [
-    //{ id: 1, storeName: "Κατάστημα Αθήνας", shippingMethod: ShippingMethod.Standard, isStepOneConfirmed: false, isStepTwoConfirmed: false },
-    //{ id: 2, storeName: "Κατάστημα Θεσσαλονίκης", shippingMethod: ShippingMethod.Express, isStepOneConfirmed: true, isStepTwoConfirmed: false },
-    //{ id: 3, storeName: "Κατάστημα Πάτρας", shippingMethod: ShippingMethod.StorePickup, isStepOneConfirmed: false, isStepTwoConfirmed: false },
-];
 export function OrderLine({ products, stores, currentStore, order }) {
     console.log(order);
     const [items, setItems] = useState<FulfillmentItem[]>([]);
@@ -49,8 +43,22 @@ export function OrderLine({ products, stores, currentStore, order }) {
         ));
     };
 
-    const handleShippingChange = (id: number, method: ShippingMethod) => {
-        setItems(prev => prev.map(item => item.id === id ? { ...item, shippingMethod: method } : item));
+    const OrderStatusLabels: Record<string, string> = {
+        "Requested": "Αναμονή",
+        "AwaitForConfirmation": "Αναμονή για Επιβεβαίωση",
+        "PartiallyFulfilled": "Μερικώς Συμπληρωμήνη",
+        "Completed": "Ολοκληρώθηκε"
+    };
+
+    const TransportMethods: Record<string, string> = {
+        "Requested": "Αναμονή",
+        "AwaitForConfirmation": "Αναμονή για Επιβεβαίωση",
+        "PartiallyFulfilled": "Μερικώς Συμπληρωμήνη",
+        "CompanyDriver": "Ολοκληρώθηκε"
+    };
+
+    const handleShippingChange = (id: number, method: string) => {
+        setItems(prev => prev.map(item => item.id === id ? { ...item, transportMethod: method } : item));
     };
 
     const handleConfirmStepOne = (id: number) => {
@@ -67,6 +75,17 @@ export function OrderLine({ products, stores, currentStore, order }) {
                 const prod = products.get(order.productId);
                 setOrderItem(prod);
                 setIsConfirmed(true);
+                setItems(order.orderLineFulfillment.map((fulfillments) => {
+                    const fulfillmentStore = stores.get(fulfillments.storeId);
+                    return {
+                        id: fulfillments.storeId,
+                        storeName: fulfillmentStore ? fulfillmentStore.storeDescription: "Unknown Store",
+                        quantity: fulfillments.quantity,
+                        transportMethod: fulfillments.fulfillmentTransportMethod,
+                        isStepOneConfirmed: false,
+                        isStepTwoConfirmed: false
+                    }
+                }));
             }
         };
 
@@ -74,7 +93,7 @@ export function OrderLine({ products, stores, currentStore, order }) {
     });
 
     const handleAddFulfillment = () => {
-        const newFulfillment: FulfillmentItem = { id: currentStore.id, storeName: currentStore.storeDescription, quantity: 0, shippingMethod: ShippingMethod.Standard, isStepOneConfirmed: false, isStepTwoConfirmed: false };
+        const newFulfillment: FulfillmentItem = { id: currentStore.id, storeName: currentStore.storeDescription, quantity: 0, transportMethod: ShippingMethod.Standard, isStepOneConfirmed: false, isStepTwoConfirmed: false };
         setItems((prevItems) => [...prevItems, newFulfillment]);
     };
 
@@ -107,7 +126,7 @@ export function OrderLine({ products, stores, currentStore, order }) {
                 {/* Κατάσταση */}
                 <div className="flex flex-col space-y-1 pt-2 ml-12">
                     <span className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Κατάσταση</span>
-                    <span className="text-sm font-semibold text-white py-0.5">Αναμονή</span>
+                    <span className="text-sm font-semibold text-white py-0.5">{OrderStatusLabels[order?.orderLineStatus]}</span>
                 </div>
 
                 {/* Fulfillment Λίστα */}
@@ -167,12 +186,12 @@ export function OrderLine({ products, stores, currentStore, order }) {
                                     {/* Dropdown Αποστολής */}
                                     <div className="w-44">
                                         <select
-                                            value={item.shippingMethod}
-                                            onChange={(e) => handleShippingChange(item.id, e.target.value as ShippingMethod)}
+                                            value={TransportMethods[item.transportMethod]}
+                                            onChange={() => handleShippingChange(item.id, TransportMethods[item.transportMethod])}
                                             disabled={item.isStepTwoConfirmed}
                                             className="border-b bg-slate-900/60 border-blue-300 focus:outline-none focus:border-blue-200 py-0.5 text-white cursor-pointer w-40 disabled:border-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-ellipsis"
                                         >
-                                            {Object.values(ShippingMethod).map((method) => (
+                                            {Object.values(TransportMethods).map((method) => (
                                                 <option key={method} value={method} className="bg-slate-900 text-white text-xs">
                                                     {method}
                                                 </option>

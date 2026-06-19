@@ -36,7 +36,7 @@
     {
         Requested,
         AwaitForConfirmation,
-        PartiallyFullfilled,
+        PartiallyFulfilled,
         Completed
     }
 }

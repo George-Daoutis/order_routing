@@ -85,7 +85,7 @@ function App() {
 
             <main className="flex-1 overflow-y-auto p-3 space-y-3">
                 {orders?.map((order: Order) => (
-                    <OrderLine key={order.id} products={productLookup} stores={stores} currentStore={currentStore} order={order} />
+                    <OrderLine key={order.id} products={productLookup} stores={storesLookup} currentStore={currentStore} order={order} />
                 ))}
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 3</div>
                 <div className="p-8 bg-slate-800/50 rounded border border-slate-700">Line Item 4</div>
