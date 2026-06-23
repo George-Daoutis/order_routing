@@ -30,7 +30,7 @@ interface ProductLookup {
 }
 
 export function OrderLine({ products, stores, currentStore, order }) {
-    console.log(order);
+    //console.log(order); temp commented
     const [items, setItems] = useState<FulfillmentItem[]>([]);
     const [orderItem, setOrderItem] = useState<ProductLookup>();
     const [isConfirmed, setIsConfirmed] = useState<boolean>(false);

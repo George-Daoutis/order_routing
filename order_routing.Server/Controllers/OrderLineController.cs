@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using order_routing.Server.Models;
 using order_routing.Server.Services;
+using System.Security.Claims;
 
 namespace order_routing.Server.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderLineController: ControllerBase
@@ -19,6 +22,14 @@ namespace order_routing.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<OrderLineGetDTO>> CreateOrderLine([FromBody] OrderLineCreateDTO orderlineCreateDTO)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userStoreId = int.Parse(User.FindFirst("UserStoreId")?.Value ?? "0");
+
+            //if (userRole == "StoreUser" && userStoreId != storeId)
+            //{
+            //    return Forbid();
+            //}
+
             var response = await _orderLineService.NewOrder(orderlineCreateDTO);
             if (response != null)
             {
@@ -30,6 +41,14 @@ namespace order_routing.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<OrderLineGetDTO>> GetAllOrderLines()
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userStoreId = int.Parse(User.FindFirst("UserStoreId")?.Value ?? "0");
+
+            if (userRole == "StoreUser")
+            {
+                return Unauthorized();
+            }
+
             var response = await _orderLineService.GetAllOrderLines();
             if (response != null)
             {

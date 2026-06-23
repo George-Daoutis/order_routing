@@ -8,6 +8,7 @@
         public string PhoneNumber { get; set; } = string.Empty;
         public ICollection<OrderLine> OrderLines { get; set; } = new List<OrderLine>();
         public ICollection<OrderLineFulfillment> OrderLineFulfillments { get; set; } = new List<OrderLineFulfillment>();
+        public ICollection<User> Users { get; set; } = new List<User>();
 
     }
 

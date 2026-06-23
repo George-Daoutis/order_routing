@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using order_routing.Server.Data;
@@ -11,9 +12,11 @@ using order_routing.Server.Data;
 namespace order_routing.Server.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    partial class OrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619165148_AddedUserModel")]
+    partial class AddedUserModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,6 +233,23 @@ namespace order_routing.Server.Migrations
                     b.HasIndex("StoreId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            PasswordHash = "admin",
+                            Role = "Admin",
+                            Username = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            PasswordHash = "sUser1",
+                            Role = "StoreUser",
+                            StoreId = 1,
+                            Username = "sUser1"
+                        });
                 });
 
             modelBuilder.Entity("order_routing.Server.Models.OrderLine", b =>

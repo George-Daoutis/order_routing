@@ -50,6 +50,13 @@ namespace order_routing.Server.Data
                 .WithMany(o => o.OrderLineFulfillments)
                 .HasForeignKey(s => s.StoreId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Store)
+                .WithMany(s => s.Users)
+                .HasForeignKey(u => u.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -61,6 +68,7 @@ namespace order_routing.Server.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<OrderLineFulfillment> OrderLineFullfillments { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     }
